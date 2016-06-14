@@ -13,40 +13,120 @@ Three.js defintion ... ->
 Three.js is a cross-browser JavaScript library/API used to create and display animated 3D computer graphics in a web browser. Three.js uses WebGL. The source code is hosted in a repository on GitHub.
 ---> this definition is copy and pasted from google <---
 
-0. entry point / basic setup ...
-    intialize all these objects as global varaibles..
+Three.js needs to have 3 basic components to render barebones minimum to an html page. They are a scene, camera, renderer.
 
-    var renderer;
-    var scene;
-    var camera...
+The scene is like the "sandbox" container for your "elements", "objects" like Meshs, Lights and Cameras.
 
-    -scene
-    -camera
-    -renderer
+The Camera is like your "view entry point" and is a very accurate term for what it does.
 
-    create a scene that will hold all elements
-        scene = new THREE.Scene();
-    create a camera 
-        scene = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
+The renderer is just setting up the context which in this case "WebGLrenderer". As three.js is a framework built on top of of the WEBGL api to make working with 3d objects simpler
+
+So to setup we need to setup the scene that will contain our camera, renderer.
+
+0. entry point / basic setup ... 
+    var scene = new THREE.Scene(); //intialize new scene
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); // intialize new camera 
+    var renderer = new THREE.WebGLRenderer(); // intialize renderer
+
+    intialize all these objects as global variables..
+  
+There are two different kinds of cameras you can use 
+Orthographic and Perspective. The only difference is that objects in view scale and look like they are becoming smaller the further they are. While in an Orthographic camera disregards distance and objects will all remain the same height like in an old school 3d Rpg game.
+
+
     create a render / context background size, color
 
-    renderer = new THREE.WebGLRenderer();
+    ....
     renderer.setClearColor(0x000000, 1.0);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
+the setClearColor method takes two paramaters. The first being a Color which can be given using a Hexcode or RGB values. the second value describes the alpha(transparency) of the background. 0 being completely transparent and 1 being opaque
+
     enable shadows
+
+  In three.js bla bla bla shadow rendering requires alot of CPU processing power. So by default it is off. To turn it on 
 
     renderer.shadowMapEnabled = true;
 
+There are two add-ons we can that make our life easier when messing around with 3d objects. Practically alot of it comes down to experimenting with whats one scene directly to get a sense of what looks right. Rather than randomly guessing e.g how fast a sphere rotates. 
 
-    
+  so the first add-on would be some stats located at the top left corner by default. Stats tells us our FPS and FPS stands for frames per second. Usually rendering and updating 3d models requires alot of processing power and FPS is a quick way to tell if your Device can handle it.
+
+  you can either use the cdn or dl the stats.min library directly and link it in your html file
+
+  The second add-on would be the dat.gui. This is the add on that allows for a visual experience in experimentation. While this is a very basic example of three.js (rotating globe painted pretty with pretty textures) if you decide to add more complex animations that you want to make look realistic via physics its easier to get a sense whether an animation looks correct by cycling through values such as speeds. It is a bit like a remote control.
+
+  So in this example we added controls to the rotation speed and direction of the globe
+
+  Firstly adding a declaring a global variable called control
+
+  var control
+  and then setup control over the rotation of the sphere like so..
+
+  function addControlGui(controlObject) {
+      var gui = new dat.GUI();
+      guid.add(controlObject, 'rotationSpeed', -0.01, 0.01);
+      ...
+  }
+  the code above sets a range you can scroll between -0.01, 0.01. scrolling in the negative reverses the direction the sphere rotates
+
+  control = new function () {
+      this.rotationSpeed = 0.001; //Default Staring value
+      ...
+  }
 
 
 1. Setup sphere and camera controls 
-  
-    -create sphere geometry.
-    -creating Mesh requires Geometry and Material 
-    -Geometry and Material 
+    to create a sphere we must create a Sphere Mesh. To create a sphere Mesh we must create a Sphere Geometry and Sphere Material.
+
+    In Three.js there are many ways to create "geometry" which is basically a shape... defined by a collection of "vertex" in 3d spatial space. This 3d Spatial space is defined by x, y, z coordinates. 
+
+    If you are familiar with Canvas then you will note that the X increases postively to the right and y Increases positively down. With THREE.js y will increase positively UP(north). Mimics 3d programs like (Blender, Autodesk products). Infact alot of the processes like positioning and translating are smiliar. 
+
+    So back to vertex or vertices 3 link together to make a 
+    triangle which is called a face. With three.js you can manually code in vertice and then link them together to create faces to manually create a shape but in this case we will just be using pre built in basic geometry I.E a sphere
+
+    Side Note Models 3d programmers prefer quads 
+    because it is easier to smooth the surface prefer Triangles because its easier to code.
+
+    So to create a Basic sphere geometry
+
+    var sphereGeometry = new THREE.SphereGeometry(height, widthsegments, heightsegments);
+
+    height in built scene scale. while widthsegments and height segments are the how many segments it has. For example if a sphere was divided once it would have two segments if two times it would have 3 segments. and so on.
+    Segments are important in determining the Smoothness of the geometry more segments = smoother surface.
+
+    after this we require a Material which will cover(wrap) the surface of the geometry. An example of a material would be basic 2d textures, bump maps, specular maps, UV maps. A basic 2d texture can be a simple image downloaded from the net or could be a Three.js given material like
+    basic color, BasicMaterial, Phong, Lambert etc... The only thing to note is Basic Materials do not take into how light reacts. (e.g would be rendererd completely black in a scene with light)
+
+    To create a basic Material
+    var sphereMaterial = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})
+
+    color is once again just given a color value (hex, rgb)
+    wireframe is an additional property that can be used to view a naked sphere without faces.
+
+    To finally Create a Mesh in this case a Sphere Mesh we must combine the sphere geometry and sphere material.
+
+    var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+
+    A Mesh is basically just the combination of geometry and material. Mesh is the only Object that can be rendered on the scene. So to add the sphere to scene 
+
+    scene.add(sphere)
+
+    To add our own texture such as our own earth image we have to create our own material instead of using just an existing one. 
+
+    var sphereMaterial = createEarthMaterial();
+
+    function createEarthmaterial() {
+        var earthTexture = THREE.ImageUtils.loadTexture(...)
+        var earthMaterial = new THREE.MeshPhongMaterial();
+        earthMaterial.map = earthTexture;
+
+        return earthMaterial;
+    }
+
+    Here we are loading in an earth image we dled and combining it with PhongMaterial. PhongMaterial will allow the Mesh to take into account what it looks like with light. 
+
 
         var sphereGeometry = new THREE.SphereGeometry(15, 30, 30);
         var sphereMaterial = new THREE.MeshNormalMaterial();
