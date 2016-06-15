@@ -31,7 +31,7 @@ So to setup we need to setup the scene that will contain our camera, renderer.
     intialize all these objects as global variables..
   
 There are two different kinds of cameras you can use 
-Orthographic and Perspective. The only difference is that objects in view scale and look like they are becoming smaller the further they are. While in an Orthographic camera disregards distance and objects will all remain the same height like in an old school 3d Rpg game.
+Orthographic and Perspective. The only difference is that objects in view scale and look like they are becoming smaller the further they are. While in an Orthographic camera disregards distance and objects will all remain the same height like in an old school 3d Rpg game. We are setting the camera view size to the browser size with window.innerWidth / window.innerHeight.
 
 
     create a render / context background size, color
@@ -142,21 +142,24 @@ There are two add-ons we can that make our life easier when messing around with 
 
         scene.add(earthMesh);
 
+
+    Here we are positioning the camera and determining where it is facing with "lookAt". lookAt can be given specific coordinates or an object where it will look to the center.
+    
+
     -add camera controls
     
-    camera.position.x = 35;
-    camera.position.y = 36;
-    camera.position.z = 33;
+    camera.position.x = 35; //defining the camera position along the x axis
+    camera.position.y = 36; // defining the camera position along the y axis
+    camera.position.z = 33; // defining the camera position along the z axis 
     camera.lookAt(scene.position);    
 
     
+    Here is another library that makes our life easier. It is wrapped around the camera object and give us the ability to scroll, zoom in and out, and rotate via clicking the screen.
 
       camera = new THREE.OrbitControls(camera);
 
-    -wrap existing camera with control object to use controls
-
         function render () {
-            cameraControl.update();
+            cameraControl.update(); //updating camera controls
         }
 
 
@@ -179,8 +182,7 @@ There are two add-ons we can that make our life easier when messing around with 
     
 
 3. Add cloud texture
-
-    -create another sphere slightly larger than the the earth globe
+    a Sphere Wrapped in a high resolution image of earth looks pretty plain on its own. We can give earth globe another layer by adding in what will look like floating clouds. So another layer. This is basically done by creating Another geometry wrapping it in a floating cloud img and setting a transparency.
 
    var cloudGeometry = new
       THREE.SphereGeometry(sphereGeometry.parameters.radius*1.01,
@@ -196,11 +198,14 @@ There are two add-ons we can that make our life easier when messing around with 
          cloudMaterial.transparent = true;
          return cloudMaterial;
    }
+    Lighting is important as it is a huge factor in determining how realistic a scene looks. There are many different methods of adding lighting using three.js.
+    Directional lightining is like parallel light coming from a torch while Ambient light is like atmosphere light which can be given a colour. 
 
-3. Add directional lighting
+    To create a directional Light...
 
-     var directionalLight = new THREE.DirectionalLight(    0xffffff, 1);
-    directionalLight.position = new THREE.Vector3(100, 10, -50);
+     var directionalLight = new THREE.DirectionalLight(    0xffffff, 1); // creating the directional light object first parameter is the color second parater is the intensity of the light
+
+    directionalLight.position = new THREE.Vector3(100, 10, -50); // placing the light using manually input vertex coordinates
     directionalLight.name = 'directional';
 
     -add to scene
@@ -244,6 +249,8 @@ There are two add-ons we can that make our life easier when messing around with 
             composer.addPass(effectCopy);
 
         -render loop 
+
+    Rendering is a bit more complicated because of the multiple materials we want to render together and not individually updated. We use the EffectComposer as we to pass in different renders, shaders, masks.
 
         function render() {
             ...
